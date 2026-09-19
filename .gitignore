@@ -1,61 +1,125 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# =========================================================
+# QUANTEXA — GITIGNORE
+# Frontend + Backend
+# =========================================================
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# testing
-/coverage
+# =========================================================
+# NODE / NEXT.JS
+# =========================================================
 
-# next.js
-/.next/
-/out/
+node_modules/
+.next/
+out/
+.vercel/
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
+# Next.js generated files
 next-env.d.ts
 
-# Dependencies
-node_modules/
+# TypeScript build information
+*.tsbuildinfo
 
-# Next.js
-.next/
 
-# Environment variables
+# =========================================================
+# ENVIRONMENT VARIABLES / SECRETS
+# =========================================================
+
 .env
 .env.local
 .env.development
 .env.production
 .env.*.local
 
-# Logs
-*.log
 
-# OS files
+# =========================================================
+# LOGS
+# =========================================================
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# =========================================================
+# PYTHON
+# =========================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.pyc
+*.pyo
+*.pyd
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+*.egg-info/
+dist/
+build/
+
+
+# =========================================================
+# PYTHON ENVIRONMENT / SECRETS
+# =========================================================
+
+.env
+
+
+# =========================================================
+# DATABASE / LOCAL DEVELOPMENT
+# =========================================================
+
+*.db
+*.sqlite
+*.sqlite3
+
+
+# =========================================================
+# IDE / EDITOR
+# =========================================================
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+.idea/
+
+
+# =========================================================
+# OS FILES
+# =========================================================
+
 .DS_Store
 Thumbs.db
+
+
+# =========================================================
+# VERCEL
+# =========================================================
+
+.vercel
+
+
+# =========================================================
+# LOCAL CERTIFICATES / KEYS
+# =========================================================
+
+*.pem
+*.key
+
+
+# =========================================================
+# DOCKER LOCAL OVERRIDES
+# =========================================================
+
+docker-compose.override.yml
