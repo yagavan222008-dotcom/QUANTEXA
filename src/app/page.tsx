@@ -1,69 +1,639 @@
-import Image from "next/image";
+"use client";
+
+import AssetCard from "@/components/dashboard/AssetCard";
+import PerformanceChart from "@/components/dashboard/PerformanceChart";
+import PortfolioCard from "@/components/dashboard/PortfolioCard";
+
+import {
+  allocation,
+  assets,
+  insights,
+  marketRegime,
+  portfolio,
+  topMovers,
+} from "@/lib/mockMarketData";
+
+import { useCurrency } from "@/components/CurrencyProvider";
+
+import {
+  ArrowUpRight,
+  BarChart3,
+  ChevronRight,
+  Clock3,
+  ExternalLink,
+  Lightbulb,
+  MessageCircle,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 
 export default function Home() {
+
+  const { formatAmount } = useCurrency();
+
+  /*
+   * ============================================================
+   * CURRENCY FORMATTER
+   * ============================================================
+   *
+   * All monetary values in the dashboard should pass through
+   * this function.
+   *
+   * Source prices in our mock data are USD.
+   */
+
+  const formatUSD = (
+    amount: number,
+    decimals = 2
+  ) => {
+    return formatAmount(
+      amount,
+      decimals,
+      "USD"
+    );
+  };
+
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="dashboard-page">
+
+      {/* =====================================================
+          PAGE HEADER
+      ===================================================== */}
+
+      <div className="dashboard-header">
+
+        <div>
+
+          <span className="dashboard-eyebrow">
+            QUANTITATIVE RESEARCH
+          </span>
+
+          <h1>
+            Market Overview
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p>
+            Global markets, key assets, and research insights at a glance.
           </p>
+
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+
+
+        <div className="dashboard-header-controls">
+
+          <button className="date-button">
+
+            <Clock3 size={16} />
+
+            <span>1D</span>
+            <span>1W</span>
+            <span>1M</span>
+            <span>3M</span>
+            <span>1Y</span>
+            <span>ALL</span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      {/* =====================================================
+          MAIN DASHBOARD GRID
+      ===================================================== */}
+
+      <div className="dashboard-grid">
+
+
+        {/* ===================================================
+            CENTER COLUMN
+        =================================================== */}
+
+        <div className="dashboard-main">
+
+
+          {/* =================================================
+              ASSET CARDS
+          ================================================= */}
+
+          <div className="asset-grid">
+
+            {assets.map((asset) => (
+
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+              />
+
+            ))}
+
+          </div>
+
+
+          {/* =================================================
+              PERFORMANCE CHART
+          ================================================= */}
+
+          <PerformanceChart />
+
+
+          {/* =================================================
+              BOTTOM CARDS
+          ================================================= */}
+
+          <div className="dashboard-bottom-grid">
+
+
+            {/* =================================================
+                KEY INSIGHTS
+            ================================================= */}
+
+            <section className="dashboard-card insights-card">
+
+              <div className="card-header">
+
+                <div className="card-title">
+
+                  <div className="card-icon blue">
+                    <Lightbulb size={17} />
+                  </div>
+
+                  <h2>
+                    Key Insights
+                  </h2>
+
+                </div>
+
+
+                <button className="view-all-button">
+
+                  View all
+
+                  <ArrowUpRight size={14} />
+
+                </button>
+
+              </div>
+
+
+              <div className="insights-list">
+
+                {insights.map((insight) => (
+
+                  <div
+                    className="insight-row"
+                    key={insight.id}
+                  >
+
+                    <div
+                      className={`insight-icon ${insight.type}`}
+                    >
+
+                      <TrendingUp size={15} />
+
+                    </div>
+
+
+                    <div className="insight-content">
+
+                      <strong>
+                        {insight.title}
+                      </strong>
+
+                      <span>
+                        {insight.description}
+                      </span>
+
+                    </div>
+
+
+                    <time>
+                      {insight.timeAgo}
+                    </time>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </section>
+
+
+            {/* =================================================
+                TOP MOVERS
+            ================================================= */}
+
+            <section className="dashboard-card movers-card">
+
+              <div className="card-header">
+
+                <div className="card-title">
+
+                  <div className="card-icon purple">
+
+                    <BarChart3 size={17} />
+
+                  </div>
+
+                  <h2>
+                    Top Movers
+                  </h2>
+
+                </div>
+
+
+                <button className="view-all-button">
+
+                  View all
+
+                  <ArrowUpRight size={14} />
+
+                </button>
+
+              </div>
+
+
+              <div className="mover-tabs">
+
+                <button className="mover-tab-active">
+                  Gainers
+                </button>
+
+                <button>
+                  Losers
+                </button>
+
+                <button>
+                  Most Active
+                </button>
+
+              </div>
+
+
+              <div className="movers-list">
+
+                {topMovers.map((mover) => (
+
+                  <div
+                    className="mover-row"
+                    key={mover.symbol}
+                  >
+
+                    <div className="mover-company-icon">
+
+                      {mover.symbol.charAt(0)}
+
+                    </div>
+
+
+                    <div className="mover-name">
+
+                      <strong>
+                        {mover.name}
+                      </strong>
+
+                      <span>
+                        {mover.symbol}
+                      </span>
+
+                    </div>
+
+
+                    {/* =========================================
+                        CURRENCY FIX
+                    ========================================= */}
+
+                    <strong className="mover-price">
+
+                      {formatUSD(
+                        mover.price,
+                        2
+                      )}
+
+                    </strong>
+
+
+                    <span
+                      className={
+                        mover.changePercent >= 0
+                          ? "positive-text"
+                          : "negative-text"
+                      }
+                    >
+
+                      {mover.changePercent >= 0
+                        ? "+"
+                        : ""}
+
+                      {mover.changePercent.toFixed(2)}%
+
+                    </span>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </section>
+
+          </div>
+
+        </div>
+
+
+        {/* ===================================================
+            RIGHT COLUMN
+        =================================================== */}
+
+        <aside className="dashboard-sidebar">
+
+
+          {/* =================================================
+              PORTFOLIO
+          ================================================= */}
+
+          <PortfolioCard
+            portfolio={portfolio}
+          />
+
+
+          {/* =================================================
+              ASSET ALLOCATION
+          ================================================= */}
+
+          <section className="dashboard-card allocation-card">
+
+            <div className="card-header">
+
+              <div className="card-title">
+
+                <h2>
+                  Asset Allocation
+                </h2>
+
+              </div>
+
+
+              <button className="view-all-button">
+
+                View all
+
+                <ArrowUpRight size={14} />
+
+              </button>
+
+            </div>
+
+
+            <div className="allocation-content">
+
+
+              <div className="allocation-chart">
+
+                <div className="allocation-donut">
+
+                  <div className="allocation-center">
+
+                    <strong
+                      className={`allocation-center-value ${
+                        formatUSD(portfolio.totalValue, 0).length > 14
+                          ? "very-long"
+                          : formatUSD(portfolio.totalValue, 0).length > 11
+                          ? "long"
+                          : formatUSD(portfolio.totalValue, 0).length > 8
+                          ? "medium"
+                          : "normal"
+                      }`}
+                    >
+                      {formatUSD(
+                        portfolio.totalValue,
+                        0
+                      )}
+                    </strong>
+
+                    <span>
+                      Total
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div className="allocation-list">
+
+                {allocation.map((item) => (
+
+                  <div
+                    className="allocation-row"
+                    key={item.name}
+                  >
+
+                    <span className="allocation-name">
+
+                      <i
+                        style={{
+                          backgroundColor:
+                            item.color,
+                        }}
+                      />
+
+                      {item.name}
+
+                    </span>
+
+
+                    <strong>
+                      {item.percentage}%
+                    </strong>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* =================================================
+              MARKET REGIME
+          ================================================= */}
+
+          <section className="dashboard-card regime-card">
+
+            <div className="card-header">
+
+              <div className="card-title">
+
+                <h2>
+                  Market Regime
+                </h2>
+
+              </div>
+
+
+              <span className="live-status">
+
+                <i />
+
+                Live
+
+              </span>
+
+            </div>
+
+
+            <div className="regime-content">
+
+              <div className="regime-icon">
+
+                <TrendingUp size={23} />
+
+              </div>
+
+
+              <div className="regime-info">
+
+                <strong>
+                  {marketRegime.name}
+                </strong>
+
+                <span>
+                  {marketRegime.confidence}
+                </span>
+
+              </div>
+
+
+              <ChevronRight size={18} />
+
+            </div>
+
+          </section>
+
+
+          {/* =================================================
+              QUANTEXA AI
+          ================================================= */}
+
+          <section className="dashboard-card ai-card">
+
+            <div className="ai-header">
+
+              <div className="ai-title">
+
+                <div className="ai-icon">
+
+                  <Sparkles size={17} />
+
+                </div>
+
+
+                <h2>
+                  QuantExa AI
+                </h2>
+
+
+                <span>
+                  BETA
+                </span>
+
+              </div>
+
+
+              <ExternalLink size={16} />
+
+            </div>
+
+
+            <div className="ai-input">
+
+              <MessageCircle size={17} />
+
+              <span>
+                Ask about markets, strategies, or data...
+              </span>
+
+
+              <button>
+
+                <ArrowUpRight size={16} />
+
+              </button>
+
+            </div>
+
+
+            <p className="ai-suggestions-label">
+              Try asking:
+            </p>
+
+
+            <div className="ai-suggestions">
+
+              <button>
+                Why is gold rising?
+              </button>
+
+              <button>
+                Analyze BTC correlation
+              </button>
+
+              <button>
+                Suggest a strategy for current regime
+              </button>
+
+            </div>
+
+          </section>
+
+        </aside>
+
+      </div>
+
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <footer className="dashboard-footer">
+
+        <span>
+          © 2026 QuantExa. Accelerating quantitative research.
+        </span>
+
+
+        <div>
+
+          <a href="#">
             Documentation
           </a>
+
+          <a href="#">
+            Help
+          </a>
+
+          <a href="#">
+            Privacy
+          </a>
+
+          <a href="#">
+            Terms
+          </a>
+
         </div>
-      </main>
+
+      </footer>
+
     </div>
   );
 }
