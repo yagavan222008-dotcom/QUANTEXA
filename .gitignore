@@ -1,0 +1,92 @@
+# ==============================
+# Environment / Secrets
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Python
+# ==============================
+__pycache__/APP_NAME=Quantext
+APP_VERSION=0.1.0
+ENVIRONMENT=development
+
+DATABASE_URL=postgresql://quantext:YOUR_PASSWORD@localhost:5432/quantext
+
+SECRET_KEY=YOUR_SECRET_KEY
+
+FEATHERLESS_API_KEY=YOUR_FEATHERLESS_API_KEY
+
+ALPHA_VANTAGE_API_KEY=YOUR_ALPHA_VANTAGE_API_KEY
+
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+*.py[cod]
+*.pyo
+*.pyd
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ==============================
+# Logs
+# ==============================
+*.log
+logs/
+
+# ==============================
+# Local databases
+# ==============================
+*.db
+*.sqlite
+*.sqlite3
+
+# ==============================
+# Secrets / credentials
+# ==============================
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+
+# ==============================
+# OS files
+# ==============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==============================
+# IDE
+# ==============================
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# ==============================
+# Node / Frontend
+# ==============================
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+
+# ==============================
+# Temporary files
+# ==============================
+*.tmp
+*.temp
+*.bak
+*.swp
