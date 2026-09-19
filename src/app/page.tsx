@@ -1,12 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import AssetCard from "@/components/dashboard/AssetCard";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import PortfolioCard from "@/components/dashboard/PortfolioCard";
 
 import {
   allocation,
-  assets,
+  assets as mockAssets,
   insights,
   marketRegime,
   portfolio,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/mockMarketData";
 
 import { useCurrency } from "@/components/CurrencyProvider";
+import { getAssets } from "@/lib/api";
 
 import {
   ArrowUpRight,
@@ -28,8 +30,34 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-
   const { formatAmount } = useCurrency();
+  const [displayAssets, setDisplayAssets] = useState(mockAssets);
+
+  useEffect(() => {
+    getAssets()
+      .then((res) => {
+        if (res && res.assets && res.assets.length > 0) {
+          const updated = mockAssets.map((asset) => {
+            const match = res.assets.find(
+              (a) =>
+                a.symbol.toUpperCase() === asset.symbol.toUpperCase() ||
+                (asset.symbol === "BTCUSD" && a.symbol === "BTC-USD") ||
+                (asset.symbol === "XAUUSD" && a.symbol === "GC=F")
+            );
+            if (match) {
+              return {
+                ...asset,
+                price: match.latest_price || asset.price,
+                changePercent: match.change_percent ?? asset.changePercent,
+              };
+            }
+            return asset;
+          });
+          setDisplayAssets(updated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   /*
    * ============================================================
@@ -120,7 +148,7 @@ export default function Home() {
 
           <div className="asset-grid">
 
-            {assets.map((asset) => (
+            {displayAssets.map((asset) => (
 
               <AssetCard
                 key={asset.id}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Activity,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { Asset } from "@/types/market";
+import { getTechnicalIndicators } from "@/lib/api";
 
 import {
   getPerformanceData,
@@ -236,13 +237,55 @@ export default function TechnicalIndicators({
   startDate,
   endDate,
 }: TechnicalIndicatorsProps) {
-  /*
-   * The technical series now depends on:
-   *
-   * 1. Asset
-   * 2. Start date
-   * 3. End date
-   */
+  const [apiIndicator, setApiIndicator] = useState<{
+    sma20: number;
+    sma50: number;
+    ema20: number;
+    ema50: number;
+    rsi: number;
+    smaSignal: string;
+    emaSignal: string;
+    rsiSignal: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    getTechnicalIndicators(asset.symbol)
+      .then((res) => {
+        if (isMounted && res && res.latest) {
+          const latest = res.latest;
+          const price = latest.price || asset.price || 1;
+          const sma20 = latest.sma_fast ?? price;
+          const sma50 = latest.sma_slow ?? price;
+          const ema20 = latest.ema_fast ?? price;
+          const ema50 = latest.ema_slow ?? price;
+          const rsi = 50; // default signal
+
+          const smaSignal = price > sma20 && sma20 > sma50 ? "Bullish" : price < sma20 && sma20 < sma50 ? "Bearish" : "Neutral";
+          const emaSignal = price > ema20 && ema20 > ema50 ? "Bullish" : price < ema20 && ema20 < ema50 ? "Bearish" : "Neutral";
+          const rsiSignal = rsi >= 70 ? "Overbought" : rsi <= 30 ? "Oversold" : "Neutral";
+
+          setApiIndicator({
+            sma20,
+            sma50,
+            ema20,
+            ema50,
+            rsi,
+            smaSignal,
+            emaSignal,
+            rsiSignal,
+          });
+        }
+      })
+      .catch(() => {
+        // Fallback to local calculation
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [asset.symbol, startDate, endDate]);
+
   const data = useMemo(() => {
     return buildIndicatorSeries(
       asset,
@@ -251,17 +294,15 @@ export default function TechnicalIndicators({
     );
   }, [asset, startDate, endDate]);
 
-  /*
-   * Current technical values come directly from
-   * the central QuantExa analysis engine.
-   */
-  const technical = useMemo(() => {
+  const fallbackTechnical = useMemo(() => {
     return getTechnicalAnalysis(
       asset,
       startDate,
       endDate
     );
   }, [asset, startDate, endDate]);
+
+  const technical = apiIndicator || fallbackTechnical;
 
   const pricePath = useMemo(
     () =>

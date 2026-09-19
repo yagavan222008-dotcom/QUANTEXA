@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Activity,
@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { assets } from "@/lib/mockMarketData";
+import { getAvailableStrategies, generateStrategySignals, StrategySignalResponse } from "@/lib/api";
 
 type StrategyType =
   | "Trend Following"
@@ -105,6 +106,37 @@ export default function StrategyLabPage() {
   const [strategyGenerated, setStrategyGenerated] =
     useState(false);
 
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [signalResult, setSignalResult] = useState<StrategySignalResponse | null>(null);
+
+  useEffect(() => {
+    getAvailableStrategies()
+      .then((res) => {
+        if (res && res.strategies && res.strategies.length > 0) {
+          // Available strategies loaded from FastAPI
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleGenerateStrategy() {
+    setIsGenerating(true);
+    setStrategyGenerated(true);
+
+    try {
+      const res = await generateStrategySignals({
+        symbol: "NVDA",
+        strategy: "sma_crossover",
+        parameters: { fast_period: fastPeriod, slow_period: slowPeriod },
+      });
+      setSignalResult(res);
+    } catch {
+      // Keep state as generated with fallback calculations
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
   function toggleAsset(assetId: string) {
     setSelectedAssets((current) => {
       if (current.includes(assetId)) {
@@ -135,6 +167,7 @@ export default function StrategyLabPage() {
     setSlowPeriod(50);
     setRiskPerTrade(2);
     setStrategyGenerated(false);
+    setSignalResult(null);
   }
 
   const selectedAssetNames = useMemo(() => {
@@ -206,12 +239,11 @@ export default function StrategyLabPage() {
           <button
             type="button"
             className="strategy-generate-button"
-            onClick={() =>
-              setStrategyGenerated(true)
-            }
+            onClick={handleGenerateStrategy}
+            disabled={isGenerating}
           >
             <Play size={16} />
-            Generate Strategy
+            {isGenerating ? "Generating..." : "Generate Strategy"}
           </button>
 
         </div>

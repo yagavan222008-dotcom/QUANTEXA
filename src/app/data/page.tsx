@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   BarChart3,
@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   Wifi,
 } from "lucide-react";
+
+import { getAssets } from "@/lib/api";
 
 type AssetClass =
   | "All Assets"
@@ -152,15 +154,19 @@ export default function DataSourcesPage() {
     );
   }, [assetClass]);
 
-  function syncData() {
+  async function syncData() {
     if (isSyncing) return;
 
     setIsSyncing(true);
 
-    window.setTimeout(() => {
+    try {
+      await getAssets();
       setLastSync("Just now");
+    } catch {
+      setLastSync("Sync offline");
+    } finally {
       setIsSyncing(false);
-    }, 900);
+    }
   }
 
   function resetFilters() {

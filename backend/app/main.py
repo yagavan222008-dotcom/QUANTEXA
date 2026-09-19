@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from slowapi import _rate_limit_exceeded_handler
@@ -11,11 +11,18 @@ from app.core.exception_handlers import internal_server_error_handler
 from app.core.rate_limit import limiter
 
 
+from app.database.init_db import init_db
+
 app = FastAPI(
     title="Quantext API",
     description="Quantitative Multi-Asset Financial Intelligence & Backtesting Platform",
     version="0.1.0",
 )
+
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
 
 # ---------------------------------------------------------

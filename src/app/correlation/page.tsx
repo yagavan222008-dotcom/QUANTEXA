@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Activity,
   ArrowDownRight,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { assets } from "@/lib/mockMarketData";
+import { getCorrelationMatrix, getRollingCorrelation } from "@/lib/api";
 
 type CorrelationCell = {
   id: string;
@@ -174,71 +176,90 @@ function createPath(
 }
 
 export default function CorrelationLabPage() {
-  const assetIds = assets.map(
-    (asset) => asset.id
-  );
+  const [liveMatrix, setLiveMatrix] = useState<Record<string, Record<string, number>> | null>(null);
+  const [liveRolling, setLiveRolling] = useState<number[] | null>(null);
 
-  const symbols = assets.map(
-    (asset) => asset.symbol
-  );
+  useEffect(() => {
+    let isMounted = true;
+    getCorrelationMatrix(["NVDA", "BTC-USD", "GC=F", "SPX"], "pearson")
+      .then((res) => {
+        if (isMounted && res && res.matrix) {
+          // Normalize matrix keys to asset.id keys
+          const normalized: Record<string, Record<string, number>> = {};
+          const keyMap: Record<string, string> = {
+            "BTC-USD": "bitcoin",
+            "BTCUSD": "bitcoin",
+            "GC=F": "gold",
+            "XAUUSD": "gold",
+            "NVDA": "nvidia",
+            "SPX": "sp500",
+          };
+
+          for (const [k1, row] of Object.entries(res.matrix)) {
+            const mapped1 = keyMap[k1] || k1.toLowerCase();
+            normalized[mapped1] = normalized[mapped1] || {};
+            for (const [k2, val] of Object.entries(row)) {
+              const mapped2 = keyMap[k2] || k2.toLowerCase();
+              normalized[mapped1][mapped2] = val ?? 1.0;
+            }
+          }
+          setLiveMatrix(normalized);
+        }
+      })
+      .catch(() => {});
+
+    getRollingCorrelation("BTC-USD", "SPX", 30)
+      .then((res) => {
+        if (isMounted && res && res.data && res.data.length > 0) {
+          setLiveRolling(res.data.map((d) => d.correlation));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeMatrix = liveMatrix || correlationMatrix;
+
+  const assetIds = assets.map((asset) => asset.id);
+  const symbols = assets.map((asset) => asset.symbol);
 
   const strongestPairs: CorrelationCell[] = [];
 
   for (let i = 0; i < assets.length; i++) {
-    for (
-      let j = i + 1;
-      j < assets.length;
-      j++
-    ) {
+    for (let j = i + 1; j < assets.length; j++) {
       const first = assets[i];
       const second = assets[j];
+      const val = activeMatrix[first.id]?.[second.id] ?? correlationMatrix[first.id]?.[second.id] ?? 0.5;
 
       strongestPairs.push({
         id: `${first.id}-${second.id}`,
         symbol: `${first.symbol} / ${second.symbol}`,
         name: `${first.name} vs ${second.name}`,
-        value:
-          correlationMatrix[first.id][
-            second.id
-          ],
+        value: val,
       });
     }
   }
 
   const strongestPair =
     [...strongestPairs].sort(
-      (a, b) =>
-        Math.abs(b.value) -
-        Math.abs(a.value)
+      (a, b) => Math.abs(b.value) - Math.abs(a.value)
     )[0];
 
   const weakestPair =
     [...strongestPairs].sort(
-      (a, b) =>
-        Math.abs(a.value) -
-        Math.abs(b.value)
+      (a, b) => Math.abs(a.value) - Math.abs(b.value)
     )[0];
 
-  const bitcoinGold =
-    correlationMatrix.bitcoin.gold;
+  const bitcoinGold = activeMatrix.bitcoin?.gold ?? correlationMatrix.bitcoin.gold;
 
-  const bitcoinValues =
-    rollingCorrelation.map(
-      (point) => point.bitcoin
-    );
+  const bitcoinValues = liveRolling || rollingCorrelation.map((point) => point.bitcoin);
+  const goldValues = rollingCorrelation.map((point) => point.gold);
 
-  const goldValues =
-    rollingCorrelation.map(
-      (point) => point.gold
-    );
-
-  const bitcoinPath = createPath(
-    bitcoinValues
-  );
-
-  const goldPath = createPath(
-    goldValues
-  );
+  const bitcoinPath = createPath(bitcoinValues);
+  const goldPath = createPath(goldValues);
 
   return (
     <main className="correlation-page">
@@ -466,9 +487,9 @@ export default function CorrelationLabPage() {
                         (columnId) => {
 
                           const value =
-                            correlationMatrix[
-                              rowId
-                            ][columnId];
+                            activeMatrix[rowId]?.[columnId] ??
+                            correlationMatrix[rowId]?.[columnId] ??
+                            1.0;
 
                           const isDiagonal =
                             rowId ===

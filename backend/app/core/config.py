@@ -10,13 +10,13 @@ class Settings(BaseSettings):
     # DATABASE
     # ============================================================
 
-    DATABASE_URL: str = ""
+    DATABASE_URL: str = "sqlite:///./quantexa.db"
 
     # ============================================================
     # SECURITY
     # ============================================================
 
-    SECRET_KEY: str = ""
+    SECRET_KEY: str = "quantexa_default_dev_secret_key_change_in_production"
 
     # ============================================================
     # EXTERNAL APIs

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   BarChart3,
@@ -12,6 +12,8 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+
+import { getRegimeAnalysis, RegimeResponse } from "@/lib/api";
 
 type Asset =
   | "Market Composite"
@@ -284,7 +286,24 @@ export default function RegimeAnalysisPage() {
   const [analysisVersion, setAnalysisVersion] =
     useState(0);
 
-  const data = useMemo(
+  const [apiRegime, setApiRegime] = useState<RegimeResponse | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    getRegimeAnalysis(asset, 20, 20)
+      .then((res) => {
+        if (isMounted && res) {
+          setApiRegime(res);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [asset, timeframe, analysisVersion]);
+
+  const fallbackData = useMemo(
     () =>
       getAdjustedData(
         asset,
@@ -292,6 +311,19 @@ export default function RegimeAnalysisPage() {
       ),
     [asset, timeframe, analysisVersion]
   );
+
+  const data = useMemo(() => {
+    if (apiRegime && apiRegime.latest_regime) {
+      const regimeName = apiRegime.latest_regime as Regime;
+      return {
+        ...fallbackData,
+        regime: ["Bull Market", "Bear Market", "Sideways Market"].includes(regimeName)
+          ? regimeName
+          : fallbackData.regime,
+      };
+    }
+    return fallbackData;
+  }, [apiRegime, fallbackData]);
 
   const regimeClass =
     getRegimeClass(data.regime);

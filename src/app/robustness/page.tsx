@@ -14,6 +14,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { runRobustness as apiRunRobustness, RobustnessResponse } from "@/lib/api";
+
 type Regime =
   | "All Regimes"
   | "Bull Market"
@@ -586,16 +588,32 @@ export default function RobustnessPage() {
      RUN / RESET
      ======================================================= */
 
-  function runRobustnessTest() {
+  const [robustnessResult, setRobustnessResult] = useState<RobustnessResponse | null>(null);
+
+  async function runRobustnessTest() {
     setIsRunning(true);
 
-    window.setTimeout(() => {
-      setAnalysisVersion(
-        (value) => value + 1
-      );
+    try {
+      const costVal = getTransactionCostValue(transactionCost) / 100;
+      const res = await apiRunRobustness({
+        symbol: "NVDA",
+        strategy: "sma_crossover",
+        parameter_grid: {
+          fast_period: [10, 20, 30],
+          slow_period: [50, 100],
+        },
+        transaction_costs: [costVal],
+        slippages: [0.001],
+        initial_capital: 100000,
+      });
 
+      setRobustnessResult(res);
+      setAnalysisVersion((v) => v + 1);
+    } catch {
+      setAnalysisVersion((v) => v + 1);
+    } finally {
       setIsRunning(false);
-    }, 700);
+    }
   }
 
   function resetAnalysis() {
