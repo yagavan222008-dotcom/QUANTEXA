@@ -492,3 +492,41 @@ export async function getRegimeAnalysis(
   });
   return apiRequest<RegimeResponse>(`/api/v1/regimes/${encodeURIComponent(backendSymbol)}?${query.toString()}`);
 }
+/* =========================================================
+   FEATHERLESS AI QUANT COPILOT API
+========================================================= */
+
+export interface AIResearchResponse {
+  query: string;
+  intent: string;
+  explanation: string;
+  calculated_results: string[];
+  disclaimer: string;
+}
+
+export async function aiResearch(
+  query: string,
+  symbol?: string,
+  strategy?: string,
+  parameters?: Record<string, any>
+): Promise<AIResearchResponse> {
+  const payload: Record<string, any> = { query };
+
+  if (symbol) payload.symbol = normalizeSymbolToBackend(symbol);
+  if (strategy) payload.strategy = strategy;
+  if (parameters) payload.parameters = parameters;
+
+  return apiRequest<AIResearchResponse>("/api/v1/ai/research", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function queryAIResearch(
+  query: string,
+  symbol?: string,
+  strategy?: string,
+  parameters?: Record<string, any>
+): Promise<AIResearchResponse> {
+  return aiResearch(query, symbol, strategy, parameters);
+}

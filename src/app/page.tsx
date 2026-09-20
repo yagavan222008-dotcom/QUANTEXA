@@ -15,7 +15,7 @@ import {
 } from "@/lib/mockMarketData";
 
 import { useCurrency } from "@/components/CurrencyProvider";
-import { getAssets } from "@/lib/api";
+import { aiResearch, AIResearchResponse, getAssets } from "@/lib/api";
 
 import {
   ArrowUpRight,
@@ -25,6 +25,7 @@ import {
   ExternalLink,
   Lightbulb,
   MessageCircle,
+  RefreshCw,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
@@ -32,6 +33,30 @@ import {
 export default function Home() {
   const { formatAmount } = useCurrency();
   const [displayAssets, setDisplayAssets] = useState(mockAssets);
+
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiResponse, setAiResponse] = useState<AIResearchResponse | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  async function handleAiSubmit(customQuery?: string) {
+    const q = (customQuery !== undefined ? customQuery : aiQuery).trim();
+    if (!q || aiLoading) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    setAiResponse(null);
+
+    try {
+      const res = await aiResearch(q);
+      setAiResponse(res);
+    } catch (err) {
+      console.error("AI research error:", err);
+      setAiError("Unable to complete research query at this time. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   useEffect(() => {
     getAssets()
@@ -583,40 +608,193 @@ export default function Home() {
             </div>
 
 
-            <div className="ai-input">
+            <form
+              className="ai-input"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAiSubmit();
+              }}
+            >
 
               <MessageCircle size={17} />
 
-              <span>
-                Ask about markets, strategies, or data...
-              </span>
+              <input
+                type="text"
+                value={aiQuery}
+                onChange={(e) => setAiQuery(e.target.value)}
+                placeholder="Ask about markets, strategies, or data..."
+                disabled={aiLoading}
+                style={{
+                  border: "none",
+                  outline: "none",
+                  background: "transparent",
+                  flex: 1,
+                  color: "#1e293b",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  width: "100%",
+                }}
+              />
 
-
-              <button>
-
-                <ArrowUpRight size={16} />
-
+              <button
+                type="submit"
+                disabled={aiLoading || !aiQuery.trim()}
+                aria-label="Send Query"
+              >
+                {aiLoading ? (
+                  <RefreshCw size={16} className="animate-spin" />
+                ) : (
+                  <ArrowUpRight size={16} />
+                )}
               </button>
 
-            </div>
+            </form>
 
+            {/* LOADING STATE */}
+            {aiLoading && (
+              <div
+                style={{
+                  marginTop: "14px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  background: "#f0f7ff",
+                  border: "1px solid #d0e3ff",
+                  color: "#2878ff",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <RefreshCw size={14} className="animate-spin" />
+                <span>QuantExa AI Research Engine processing query...</span>
+              </div>
+            )}
+
+            {/* ERROR STATE */}
+            {aiError && !aiLoading && (
+              <div
+                style={{
+                  marginTop: "14px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#991b1b",
+                  fontSize: "12px",
+                  lineHeight: "1.4",
+                }}
+              >
+                {aiError}
+              </div>
+            )}
+
+            {/* SUCCESS STATE */}
+            {aiResponse && !aiLoading && (
+              <div
+                style={{
+                  marginTop: "14px",
+                  padding: "14px",
+                  borderRadius: "12px",
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    color: "#2878ff",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    marginBottom: "6px",
+                  }}
+                >
+                  AI Research Output ({aiResponse.intent || "General"})
+                </div>
+
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#334155",
+                    lineHeight: "1.5",
+                    margin: "0 0 8px 0",
+                  }}
+                >
+                  {aiResponse.explanation}
+                </p>
+
+                {aiResponse.calculated_results &&
+                  aiResponse.calculated_results.length > 0 && (
+                    <div style={{ marginBottom: "8px" }}>
+                      {aiResponse.calculated_results.map((item, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            fontSize: "12px",
+                            color: "#1e293b",
+                            fontWeight: 600,
+                            marginTop: "2px",
+                          }}
+                        >
+                          • {item}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                {aiResponse.disclaimer && (
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#94a3b8",
+                      fontStyle: "italic",
+                      marginTop: "6px",
+                    }}
+                  >
+                    {aiResponse.disclaimer}
+                  </div>
+                )}
+              </div>
+            )}
 
             <p className="ai-suggestions-label">
               Try asking:
             </p>
 
-
             <div className="ai-suggestions">
 
-              <button>
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => {
+                  setAiQuery("Why is gold rising?");
+                  handleAiSubmit("Why is gold rising?");
+                }}
+              >
                 Why is gold rising?
               </button>
 
-              <button>
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => {
+                  setAiQuery("Analyze BTC correlation");
+                  handleAiSubmit("Analyze BTC correlation");
+                }}
+              >
                 Analyze BTC correlation
               </button>
 
-              <button>
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => {
+                  setAiQuery("Suggest a strategy for current regime");
+                  handleAiSubmit("Suggest a strategy for current regime");
+                }}
+              >
                 Suggest a strategy for current regime
               </button>
 
