@@ -14,3 +14,4 @@ slowapi==0.1.10
 SQLAlchemy==2.0.54
 uvicorn==0.53.0
 yfinance==1.7.0
+argon2-cffi==25.1.0
